@@ -1,0 +1,8 @@
+cnidemo/
+.vagrant/
+*.pem
+*.csr
+*.srl
+*.log
+openssl-worker.cfg
+
