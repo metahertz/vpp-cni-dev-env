@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: kube-proxy
 spec:
-  hostNetwork: false
+  hostNetwork: true
   containers:
   - name: kube-proxy
     image: gcr.io/google_containers/hyperkube:v1.3.0-beta.2
