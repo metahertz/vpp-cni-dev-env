@@ -131,7 +131,6 @@ Requires=networking.service
 After=docker.service
 
 [Service]
-EnvironmentFile=/etc/network-environment
 ExecStart=/usr/bin/kubelet \
 --address=0.0.0.0 \
 --allow-privileged=true \
