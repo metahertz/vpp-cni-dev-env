@@ -1,6 +1,12 @@
 # What
 This repository sets up a three node kubernetes cluster with basic CNI. Ideal for CNI Development.
-The deployment should be as simple as ```vagrant up``` within this repo directory.
+The deployment should be as simple as ```vagrant up```.
+
+### Specifics
+* Kubernetes 1.3.0-beta.2
+* Ubuntu 16.04 LTS
+* Containerized Kubernetes master Components
+* SystemD for other components
 
 # Prerequisites
 - Vagrant version 1.8.4 or above due to bugs predictable udev interface names in older versions.
