@@ -52,6 +52,53 @@ Even the cluster workers talk to master via it's IP: ```192.168.10.10```. The ot
 
 The Kubernetes version deployed is: v1.3.0-beta.2.
 
+# Developing CNI
+To change the CNI configuration for a cluster, you need only look in one place ``` ./cni ```.
+All contents of ```conf``` will be placed in the correct ```/etc/cni/net.d/``` location.
+All binaries in ```bin``` will be placed into ```/opt/cni/bin```.
+
+Therefore, to use a new CNI plugin. Simply place your CNI configuration and CNI binaries into ```../cni/``` and redploy the cluster:
+
+```
+$ vagrant destroy -f
+$ vagrant up
+```
+
+The kubelet is already configured to always use CNI.
+
+## More complex CNI usecases.
+More complex CNI configurations may require pre-requisites installed during the VM creation. To this end. Cluster bring-up is done in a single file ```~/.vagrant-provision.sh```.
+
+The master can be left alone (it's a master only, no developers containers will ever be spun up there). So the worker configuration (starting at line 77) will be where you want to add any low level dependancies.
+
+## Not rebuilding the cluster.
+If you want to hack without re-building each time, then the workers are very simple. The below info should get you started.
+
+### kubelet
+The only process we really care about directly on the worker hosts are the kubelet. These are the remote agents that make a kubernes worker do anything.
+
+They authenticate with the master via SSL certs (already setup by the vagrant provisioning script) and the kubelet config itself (Ie, how it knows to use CNI) is in the SystemD configuration file at ```/etc/systemd/kubelet.service```.
+
+### CNI
+There isn't much in the kubelet configuration for CNI, apart from 'Use CNI'. This is because the CNI is designed to look in ```/etc/cni/net.d``` for configuration files, these should be named after a binary in ```/opt/cni/bin/``` and therefore the kubelet in CNI mode will follow that process to find out which CNI plugin binaries to use.
+
+If you do want to change the binaries/configuration files for CNI, you'll likley want to restart the kubelet:
+
+$ ```sudo systemctl restart kubelet.service ```
+$ ```sudo systemctl status kubelet.service ```
+
+##Current CNI setup.
+The out of the box CNI setup uses the standard 'ipvlan' plugin and 'local-host' IPAM plugin. Together they do two things.
+1. Connects each container to a 'subinterface' of the hosts enp0s8 NIC. (Sharing the NIC's MAC).
+2. Picks an IP from the 192.168.10.100 - 192.168.10.200 range. And saves this into ```/var/lib/cni/networks/cnidemo/``` as rudimentaty lease management.
+
+The path ```/var/lib/cni/networks/``` is shared by our vagrant setup, so hosts wont use conflicting IP's on the subnets for their containers.
+
+Configuration of the IP range and master interface above will be self explanitary when browsing ```./cni/conf/ipvlan.conf```
+More information on the plugins can be found here:
+
+- IPVLAN: goo.gl/Luafaw
+- HOST-LOCAL: goo.gl/y6ePtK
 
 # Notes
 - Logging on each worker node (for the kubelet) can be found at ``` journalctl -ru kubelet.service ``` (<3 SystemD)
