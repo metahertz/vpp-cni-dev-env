@@ -6,4 +6,4 @@ cnidemo/
 *.srl
 *.log
 openssl-worker.cfg
-
+*.deb

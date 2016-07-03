@@ -19,7 +19,7 @@ sudo cp /vagrant/docker.list /etc/apt/sources.list.d/docker.list
 sudo apt-get update
 sudo apt-get install -y linux-image-extra-$(uname -r)
 sudo apt-get install -y docker-engine
-sudo usermod -aG docker ubuntu
+sudo usermod -aG docker vagrant
 
 ## Setup our MASTER
 if [[ $(hostname -s) = cni-master* ]]; then
@@ -85,7 +85,7 @@ if [[ $(hostname -s) = cni-worker* ]]; then
     fi
 
     # Use our VM's IP to generate worker certs.
-    WORKER_IP=$(int-ip enp0s8)
+    WORKER_IP=$(int-ip ens33)
 
     cat <<EOF > /tmp/worker-openssl.cnf
       [req]
