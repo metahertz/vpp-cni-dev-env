@@ -55,8 +55,8 @@ if [[ $(hostname -s) = cni-master* ]]; then
     sudo chown root:root /etc/kubernetes/ssl/apiserver-key.pem
 
     # Get Kubelet and KubeCTL for master
-    sudo wget -N -P /usr/bin http://storage.googleapis.com/kubernetes-release/release/v1.3.0-beta.2/bin/linux/amd64/kubectl
-    sudo wget -N -P /usr/bin http://storage.googleapis.com/kubernetes-release/release/v1.3.0-beta.2/bin/linux/amd64/kubelet
+    sudo wget -N -P /usr/bin http://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubectl
+    sudo wget -N -P /usr/bin http://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubelet
     sudo chmod +x /usr/bin/kubelet /usr/bin/kubectl
 
     # Configure Kubelet as a SystemD service
