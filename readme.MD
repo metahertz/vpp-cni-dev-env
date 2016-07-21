@@ -50,7 +50,7 @@ Services will also be exposed on 192.168.10.224/27 (ie 192.168.10.224 - 192.168.
 
 Even the cluster workers talk to master via it's IP: ```192.168.10.10```. The other interface on the nodes is just a virtualbox NAT for default gateway/internet connectivity.
 
-The Kubernetes version deployed is: v1.3.0-beta.2.
+The Kubernetes version deployed is: v1.3.0
 
 # Developing CNI
 To change the CNI configuration for a cluster, you need only look in one place ``` ./cni ```.
@@ -103,8 +103,3 @@ More information on the plugins can be found here:
 # Notes
 - Logging on each worker node (for the kubelet) can be found at ``` journalctl -ru kubelet.service ``` (<3 SystemD)
 - A kubelet error about CNI and the status of ETH0 can be safley ingored. See: https://github.com/projectcalico/calico-containers/issues/952
-
-## Why 1.3.0-beta.2?
-Older versions DO NOT play nicely with CNI plugins due to passing extra ARGS without also passsing ```CNI_ARGS=IgnoreUnknown=1``` for general reading on this, see here: https://github.com/containernetworking/cni/pull/158
-
-Luckily, K8's 1.3.0 is due to be released any day now!
