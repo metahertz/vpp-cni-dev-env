@@ -13,14 +13,14 @@ servers=[
        :hostname => "cni-worker1",
        :ip => "192.168.10.21",
        :box => "ubuntu/xenial64",
-       :ram => 2048,
+       :ram => 3096,
        :cpu => 2
      },
      {
        :hostname => "cni-worker2",
        :ip => "192.168.10.22",
        :box => "ubuntu/xenial64",
-       :ram => 2048,
+       :ram => 3096,
        :cpu => 2
      }
    ]
