@@ -40,6 +40,7 @@ Internet speeds may affect the time taken to see active applications in the ``` 
 
 # Expectations
 
+### Upto Commit 30b7be923c4eb716eace7b0105c6996f36dd292d
 The vagrant tooling will set you up three nodes as per the diagram below.
 
 ![CNI Kubernetes Environment](/diagrams/Vagrant-Ubuntu-CNI-VPP-Dev-Env-Arch-v1.png)
@@ -51,6 +52,20 @@ Services will also be exposed on 192.168.10.224/27 (ie 192.168.10.224 - 192.168.
 Even the cluster workers talk to master via it's IP: ```192.168.10.10```. The other interface on the nodes is just a virtualbox NAT for default gateway/internet connectivity.
 
 The Kubernetes version deployed is: v1.3.0
+
+### After Commit 30b7be923c4eb716eace7b0105c6996f36dd292d (MASTER)
+The default CNI configuration was changed to provide a VPP & Calico development environment.
+Therefore now the provisioning scripts.
+
+    - Configure extra interfaces and more RAM in the Vagrant file.
+    - Apt-get more dependancies for the VPP and Calico build process.
+    - Git clone, configure and compile VPP and Calico-Felix with VPP Patches.
+    - Git clone a demo VPP-Calico multi-host routing agent.
+    - Configure Kubernetes to use the calico-cni plugin.
+    - Installs the calico-cni binaries by default.
+
+
+
 
 # Developing CNI
 To change the CNI configuration for a cluster, you need only look in one place ``` ./cni ```.
@@ -87,7 +102,7 @@ If you do want to change the binaries/configuration files for CNI, you'll likley
 $ ```sudo systemctl restart kubelet.service ```
 $ ```sudo systemctl status kubelet.service ```
 
-##Current CNI setup.
+##Current CNI setup (upto commit 30b7be923c4eb716eace7b0105c6996f36dd292d. See above)
 The out of the box CNI setup uses the standard 'ipvlan' plugin and 'local-host' IPAM plugin. Together they do two things.
 1. Connects each container to a 'subinterface' of the hosts enp0s8 NIC. (Sharing the NIC's MAC).
 2. Picks an IP from the 192.168.10.100 - 192.168.10.200 range. And saves this into ```/var/lib/cni/networks/cnidemo/``` as rudimentaty lease management.
