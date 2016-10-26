@@ -220,6 +220,7 @@ EOF
     cd /home/ubuntu
     git clone https://github.com/matjohn2/vpp-calico-route-agent.git
     cd vpp-calico-route-agent
+    sudo pip install -r requirements.txt
 
 
     echo "*** Letting VPP Claim interface for multihost: enp0s9 ***"
@@ -241,6 +242,6 @@ EOF
     echo "The kubelet worker is configured to use Calico-CNI."
     echo "VPP is installed and running and should have claimed enp0s9 as GigE0/9/0. "
     echo "calico-felix is ready to execute with the VPP FIB2.0 pluggable devices (Python) changes."
-    
+
 
 fi
