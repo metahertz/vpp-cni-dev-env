@@ -211,11 +211,21 @@ EOF
     sudo python setup.py install
 
     echo "*** Downloading VPP-Calico-Route-Agent and Deps ***"
-    
+    cd /home/ubuntu
+    git clone https://github.com/the-gigi/conman.git
+    cd conman
+    sudo pip install -r requirements.txt
+    sudo python setup.py install
+
+    cd /home/ubuntu
+    git clone https://github.com/matjohn2/vpp-calico-route-agent.git
+    cd vpp-calico-route-agent
 
 
-    # Create Felix Service definition and start.
-
+    echo "*** Letting VPP Claim interface for multihost: enp0s9 ***"
+    sudo ifconfig enp0s9 down
+    sudo systemctl restart vpp.service
+    sudo vppctl sh int
 
     echo "*** Enable Kubelet Worker ***"
     # Enable and start the unit files so that they run on boot
@@ -226,6 +236,11 @@ EOF
     sudo mkdir -p /etc/kubernetes/manifests/
     sudo cp -v /vagrant/kubelet-manifests/worker/kube-proxy.manifest /etc/kubernetes/manifests/.
 
-
+    echo "*** WORKER NODE PROVISIONING DONE ***"
+    echo "/home/ubuntu contains the VPP-Calico route agent."
+    echo "The kubelet worker is configured to use Calico-CNI."
+    echo "VPP is installed and running and should have claimed enp0s9 as GigE0/9/0. "
+    echo "calico-felix is ready to execute with the VPP FIB2.0 pluggable devices (Python) changes."
+    
 
 fi
