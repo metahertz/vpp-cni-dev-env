@@ -189,8 +189,12 @@ EOF
     sudo cp -v /tmp/kubelet.service /etc/systemd/kubelet.service
 
     echo "*** Kubernetes Worker Components Deployed ***"
-    echo "*** Starting VPP Code Download and Compile ***"
 
+    echo "*** Getting calicoctl binary and installing ***"
+    wget -qO /usr/local/bin/calicoctl http://www.projectcalico.org/builds/calicoctl
+    chmod +x /usr/local/bin/calicoctl
+
+    echo "*** Starting VPP Code Download and Compile ***"
     # Download and compile VPP.
     git clone https://gerrit.fd.io/r/vpp
     cd ./vpp/build-root
@@ -214,13 +218,13 @@ EOF
     cd /home/ubuntu
     git clone https://github.com/the-gigi/conman.git
     cd conman
-    sudo pip install -r requirements.txt
+    sudo pip install -r requirements.txt || true
     sudo python setup.py install
-
+    echo "*** Installing More VPP-Calico-Route-Agent Deps ***"
     cd /home/ubuntu
     git clone https://github.com/matjohn2/vpp-calico-route-agent.git
     cd vpp-calico-route-agent
-    sudo pip install -r requirements.txt
+    sudo pip install -r requirements.txt || true
 
 
     echo "*** Letting VPP Claim interface for multihost: enp0s9 ***"

@@ -1,5 +1,6 @@
 # What
-This repository sets up a three node kubernetes cluster with basic CNI. Ideal for CNI Development.
+This repository sets up a three node kubernetes cluster with Calico CNI and VPP Pre-Compiled.
+Ideal for VPP & CNI Development.
 The deployment should be as simple as ```vagrant up```.
 
 ### Specifics
@@ -11,7 +12,7 @@ The deployment should be as simple as ```vagrant up```.
 # Prerequisites
 - Vagrant version 1.8.4 or above due to bugs predictable udev interface names in older versions.
 - Git (to clone the repo)
-- Virtualbox with the Extensions pack installed.
+- Virtualbox with the Extensions pack installed. (My env is MacOSX).
 
 # To use
 
@@ -36,7 +37,58 @@ vagrant ssh cni-master1
 /vagrant/extras/deploy-extras.sh
 ```
 
-Internet speeds may affect the time taken to see active applications in the ``` kubectl get po ``` commands.
+Internet speeds may affect the time taken to see active applications in the ``` kubectl get po ``` commands initially, as docker images download into a new cluster.
+
+
+# VPP Demo
+VPP and the FIBv2 compatible Calico-Felix have been compiled and installed.
+VPP will be running and have claimed the GigE0/9/0 Interface.
+If not you may need to "attach" it in VirtualBox network settings (NIC Number 3, tick 'cable connected') and then perform the following on the VM via ``` vagrant ssh cni-workerX ``` ;
+
+```
+# After ensuring 'cable connected' is ticked in VirtualBOX settings
+sudo ifconfig enp0s9 down
+sudo systemctl restart vpp.service
+sudo vppctl sh int
+```
+
+Then you can simply start Calico-Felix on *BOTH* worker nodes as follows:
+
+```
+sudo FELIX_ETCDADDR=192.168.10.21:4001 FELIX_LOGSEVERITYSCREEN=DEBUG calico-felix
+```
+
+Addresses are all pre-configured to work with this environment.
+
+Felix will initially be in a 'waiting for etcD' state. to enable. perform the following commands on *cni-worker1* :
+
+```
+calicoctl profile add calico
+calicoctl pool add 192.168.0.0/16 --ipip --nat-outgoing
+etcdctl set /calico/v1/Ready true
+```
+
+Felix will then be running and through Calico-CNI (pre installed in this K8's Cluster) all new containers should be networked via VPP.
+
+on the ```CNI-Master1``` node you can ```kubectl run nginxdeployment1 --image=nginx``` and then perform a ```kubectl get po``` to track the deployment. Once deployed, you should see new ```host-caliXYZ``` interfaces in VPP.
+
+The demo calio-vpp-route-agent is also pre-installed on each worker node in /home/ubuntu.
+Once you have workloads in Calico, you can run the agent:
+
+```
+# On CNI-Worker1
+cd /home/ubuntu/vpp-calico-route-agent
+sudo python -i agent.py "calico/ipam/v2/assignment/ipv4/block" 1 172.16.0.1 24 http 192.168.10.21
+
+# on CNI-Worker2
+cd /home/ubuntu/vpp-calico-route-agent
+sudo python -i agent.py "calico/ipam/v2/assignment/ipv4/block" 1 172.16.0.2 24 http 192.168.10.21
+```
+
+You will see the commands are similar, but we also tell the agent what IP address to configure our VPP UPLINK (GigabitEthernet0/9/0 (VPP SWIF index 1)) and where to reach our Calico ETCD DB.
+
+If the agent produces an error finding etcd records/tree; then create a workload first. The first calico workload causes the ETCD ``` calico/ipam/* ``` subtree to be created in ETCD and we need this first.
+
 
 # Expectations
 
@@ -54,8 +106,9 @@ Even the cluster workers talk to master via it's IP: ```192.168.10.10```. The ot
 The Kubernetes version deployed is: v1.3.0
 
 ### After Commit 30b7be923c4eb716eace7b0105c6996f36dd292d (MASTER)
-The default CNI configuration was changed to provide a VPP & Calico development environment.
-Therefore now the provisioning scripts.
+The default CNI configuration was changed to provide a VPP & Calico development environment. (Versus a static demo CNI Environment as explained above).
+
+Therefore now the provisioning scripts also do the following:
 
     - Configure extra interfaces and more RAM in the Vagrant file.
     - Apt-get more dependancies for the VPP and Calico build process.
@@ -63,7 +116,6 @@ Therefore now the provisioning scripts.
     - Git clone a demo VPP-Calico multi-host routing agent.
     - Configure Kubernetes to use the calico-cni plugin.
     - Installs the calico-cni binaries by default.
-
 
 
 
@@ -102,7 +154,7 @@ If you do want to change the binaries/configuration files for CNI, you'll likley
 $ ```sudo systemctl restart kubelet.service ```
 $ ```sudo systemctl status kubelet.service ```
 
-##Current CNI setup (upto commit 30b7be923c4eb716eace7b0105c6996f36dd292d. See above)
+##Old CNI setup (upto commit 30b7be923c4eb716eace7b0105c6996f36dd292d. See above)
 The out of the box CNI setup uses the standard 'ipvlan' plugin and 'local-host' IPAM plugin. Together they do two things.
 1. Connects each container to a 'subinterface' of the hosts enp0s8 NIC. (Sharing the NIC's MAC).
 2. Picks an IP from the 192.168.10.100 - 192.168.10.200 range. And saves this into ```/var/lib/cni/networks/cnidemo/``` as rudimentaty lease management.
